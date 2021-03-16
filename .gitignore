@@ -49,8 +49,6 @@ sysinfo.txt
 # Builds
 *.apk
 *.ipa
-*.unitypackage
-*.exe
 *.log
 #.idea
 *.dot
