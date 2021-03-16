@@ -5,7 +5,7 @@
 Probuilder
 Timeline
 Standard Assets
-Gridbox - Набор материалов для прототипирвоания в виде сетки
+Gridbox - Набор материалов для прототипирования в виде сетки
 
 Quick Scripts: Level Design Kit https://assetstore.unity.com/packages/tools/game-toolkits/quick-scripts-level-design-kit-96200
 
