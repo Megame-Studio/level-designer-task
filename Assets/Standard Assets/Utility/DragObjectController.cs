@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using UnityEngine.UI;
 
 public class DragObjectController : MonoBehaviour
 {
@@ -7,7 +8,7 @@ public class DragObjectController : MonoBehaviour
     private float pickupDistance;
 
     public float maxDistance = 5f;
-    public float minHoldDistance = 3f;
+    public float minHoldDistance = 2f;
 
     [Header("Pick Up Objects")]
     [SerializeField]
@@ -18,6 +19,8 @@ public class DragObjectController : MonoBehaviour
 
     [SerializeField]
     private float throwForce = 750f;
+
+    public LayerMask raycastLayerMask = ~(1 << LayerMask.NameToLayer("Character"));
 
     private void Update()
     {
@@ -43,7 +46,7 @@ public class DragObjectController : MonoBehaviour
 
     private void PickupObject()
     {
-        if (Physics.Raycast(cameraTransform.position + cameraTransform.forward, cameraTransform.forward, out var hit, maxDistance))
+        if (Physics.Raycast(cameraTransform.position, cameraTransform.forward, out var hit, maxDistance, raycastLayerMask))
         {
             if (hit.rigidbody != null)
             {
