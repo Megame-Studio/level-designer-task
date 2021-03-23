@@ -21,7 +21,8 @@ public class DragObjectController : MonoBehaviour
     private float throwForce = 750f;
 
     public LayerMask raycastLayerMask = ~(1 << 6);
-
+    public bool raycastTriggers = false;
+    
     private void Update()
     {
         if (Input.GetMouseButtonDown(0))
@@ -46,7 +47,7 @@ public class DragObjectController : MonoBehaviour
 
     private void PickupObject()
     {
-        if (Physics.Raycast(cameraTransform.position, cameraTransform.forward, out var hit, maxDistance, raycastLayerMask))
+        if (Physics.Raycast(cameraTransform.position, cameraTransform.forward, out var hit, maxDistance, raycastLayerMask, raycastTriggers ? QueryTriggerInteraction.Collide : QueryTriggerInteraction.Ignore))
         {
             if (hit.rigidbody != null)
             {
