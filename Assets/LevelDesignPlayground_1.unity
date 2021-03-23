@@ -842,6 +842,9 @@ MonoBehaviour:
   - Draggable
   TriggerEnter:
     m_PersistentCalls:
+      m_Calls: []
+  TriggerStay:
+    m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 836925791}
         m_TargetAssemblyTypeName: QuickScripts.QuickDoor, Assembly-CSharp
@@ -855,9 +858,6 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
-  TriggerStay:
-    m_PersistentCalls:
-      m_Calls: []
   TriggerExit:
     m_PersistentCalls:
       m_Calls:
