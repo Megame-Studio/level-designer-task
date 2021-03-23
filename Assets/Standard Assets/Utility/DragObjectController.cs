@@ -20,7 +20,7 @@ public class DragObjectController : MonoBehaviour
     [SerializeField]
     private float throwForce = 750f;
 
-    public LayerMask raycastLayerMask = ~(1 << LayerMask.NameToLayer("Character"));
+    public LayerMask raycastLayerMask = ~(1 << 6);
 
     private void Update()
     {
