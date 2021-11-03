@@ -163,6 +163,13 @@ namespace QuickScripts
 
             obj.transform.position = destinationNode.transform.position;
             obj.transform.rotation = destinationNode.transform.rotation;
+            
+            var characterController = obj.GetComponent<CharacterController>();
+            if (characterController)
+            {
+                Physics.SyncTransforms();
+            }
+            
             if (!maintainInertia)
                 obj.GetComponent<Rigidbody>().velocity = Vector3.zero;
         }
