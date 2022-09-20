@@ -1,4 +1,4 @@
-using System;
+using System.Collections;
 using UnityEngine;
 using UnityStandardAssets.CrossPlatformInput;
 using UnityStandardAssets.Utility;
@@ -15,6 +15,7 @@ namespace UnityStandardAssets.Characters.FirstPerson
         [SerializeField] private float m_RunSpeed;
         [SerializeField] [Range(0f, 1f)] private float m_RunstepLenghten;
         [SerializeField] private float m_JumpSpeed;
+        [SerializeField] private float m_SitHeight;
         [SerializeField] private float m_StickToGroundForce;
         [SerializeField] private float m_GravityMultiplier;
         [SerializeField] private MouseLook m_MouseLook;
@@ -30,6 +31,7 @@ namespace UnityStandardAssets.Characters.FirstPerson
 
         private Camera m_Camera;
         private bool m_Jump;
+        private bool m_Sit;
         private float m_YRotation;
         private Vector2 m_Input;
         private Vector3 m_MoveDir = Vector3.zero;
@@ -39,6 +41,8 @@ namespace UnityStandardAssets.Characters.FirstPerson
         private Vector3 m_OriginalCameraPosition;
         private float m_StepCycle;
         private float m_NextStep;
+        private float m_OriginalCharacterHeight;
+        private float m_OriginalCameraHeight;
         private bool m_Jumping;
         private AudioSource m_AudioSource;
 
@@ -48,6 +52,8 @@ namespace UnityStandardAssets.Characters.FirstPerson
             m_CharacterController = GetComponent<CharacterController>();
             m_Camera = Camera.main;
             m_OriginalCameraPosition = m_Camera.transform.localPosition;
+            m_OriginalCameraHeight = m_OriginalCameraPosition.y;
+            m_OriginalCharacterHeight = m_CharacterController.height;
             m_FovKick.Setup(m_Camera);
             m_HeadBob.Setup(m_Camera, m_StepInterval);
             m_StepCycle = 0f;
@@ -56,7 +62,6 @@ namespace UnityStandardAssets.Characters.FirstPerson
             m_AudioSource = GetComponent<AudioSource>();
 			m_MouseLook.Init(transform , m_Camera.transform);
         }
-
 
         // Update is called once per frame
         private void Update()
@@ -81,8 +86,12 @@ namespace UnityStandardAssets.Characters.FirstPerson
             }
 
             m_PreviouslyGrounded = m_CharacterController.isGrounded;
-        }
 
+            if (CrossPlatformInputManager.GetButtonDown("Sit Down"))
+            {
+                SitDown();
+            }
+        }
 
         private void PlayLandingSound()
         {
@@ -91,6 +100,50 @@ namespace UnityStandardAssets.Characters.FirstPerson
             m_NextStep = m_StepCycle + .5f;
         }
 
+        private IEnumerator sitCoroutine;
+        
+        private void SitDown()
+        {
+            if (sitCoroutine != null)
+            {
+                return;
+            }
+            
+            m_Sit = !m_Sit;
+            
+            if (m_Sit)
+            {
+                sitCoroutine = SmoothSitDown(m_SitHeight, m_Camera.transform.localPosition.y / 2);
+                StartCoroutine(sitCoroutine);
+            }
+            else
+            {
+                sitCoroutine = SmoothSitDown(m_OriginalCharacterHeight, m_OriginalCameraHeight);
+                StartCoroutine(sitCoroutine);
+            }
+        }
+
+        private IEnumerator SmoothSitDown(float sitHeight, float cameraHeight)
+        {
+            float timer = 0;
+            var currentHeight = m_CharacterController.height;
+            var currentCameraHeight = m_Camera.transform.localPosition;
+            var targetCameraHeight = currentCameraHeight;
+            targetCameraHeight.y = cameraHeight;
+            
+            while (timer < 0.2f)
+            {
+                m_CharacterController.height = Mathf.Lerp(currentHeight, sitHeight, timer/0.2f);
+                m_Camera.transform.localPosition = Vector3.Lerp(currentCameraHeight, targetCameraHeight, timer/0.2f);
+                
+                yield return null;
+                timer += Time.deltaTime;
+            }
+
+            m_CharacterController.height = sitHeight;
+            m_Camera.transform.localPosition = targetCameraHeight;
+            sitCoroutine = null;
+        }
 
         private void FixedUpdate()
         {
@@ -115,10 +168,7 @@ namespace UnityStandardAssets.Characters.FirstPerson
 
                 if (m_Jump)
                 {
-                    m_MoveDir.y = m_JumpSpeed;
-                    PlayJumpSound();
-                    m_Jump = false;
-                    m_Jumping = true;
+                    DoJump();
                 }
             }
             else
@@ -133,14 +183,20 @@ namespace UnityStandardAssets.Characters.FirstPerson
             m_MouseLook.UpdateCursorLock();
         }
 
+        private void DoJump()
+        {
+            m_MoveDir.y = m_JumpSpeed;
+            PlayJumpSound();
+            m_Jump = false;
+            m_Jumping = true;
+        }
 
         private void PlayJumpSound()
         {
             m_AudioSource.clip = m_JumpSound;
             m_AudioSource.Play();
         }
-
-
+        
         private void ProgressStepCycle(float speed)
         {
             if (m_CharacterController.velocity.sqrMagnitude > 0 && (m_Input.x != 0 || m_Input.y != 0))
@@ -159,7 +215,6 @@ namespace UnityStandardAssets.Characters.FirstPerson
             PlayFootStepAudio();
         }
 
-
         private void PlayFootStepAudio()
         {
             if (!m_CharacterController.isGrounded)
@@ -175,7 +230,6 @@ namespace UnityStandardAssets.Characters.FirstPerson
             m_FootstepSounds[n] = m_FootstepSounds[0];
             m_FootstepSounds[0] = m_AudioSource.clip;
         }
-
 
         private void UpdateCameraPosition(float speed)
         {
@@ -199,7 +253,6 @@ namespace UnityStandardAssets.Characters.FirstPerson
             }
             m_Camera.transform.localPosition = newCameraPosition;
         }
-
 
         private void GetInput(out float speed)
         {
@@ -232,14 +285,12 @@ namespace UnityStandardAssets.Characters.FirstPerson
                 StartCoroutine(!m_IsWalking ? m_FovKick.FOVKickUp() : m_FovKick.FOVKickDown());
             }
         }
-
-
+        
         private void RotateView()
         {
             m_MouseLook.LookRotation (transform, m_Camera.transform);
         }
-
-
+        
         private void OnControllerColliderHit(ControllerColliderHit hit)
         {
             Rigidbody body = hit.collider.attachedRigidbody;

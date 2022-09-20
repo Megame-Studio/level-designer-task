@@ -6,11 +6,12 @@ TagManager:
   tags:
   - Fire
   - Draggable
+  - Interactable
   layers:
   - Default
   - TransparentFX
   - Ignore Raycast
-  - 
+  - Interactable
   - Water
   - UI
   - Character

@@ -21,6 +21,7 @@ public class MovingPlatform : MonoBehaviour
             }
         }
     }
+    
 
     private void OnTriggerExit(Collider other)
     {
